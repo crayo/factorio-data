@@ -7,6 +7,7 @@ Useful Factorio blueprints and information associated with them. Stored in JSON 
 ```
 {
   title: "Descriptive title of this blueprint.",
+  date: "The date the pastebin was made, if available",
   paste: "Text string of the blueprint ready to paste into the game.",
   gameVersion: "The version of the game the blueprint is made for.",
   notes: "Additional useful notes related to the blueprint.",

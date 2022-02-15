@@ -1,0 +1,25 @@
+{
+    "description": "Console commands related to map resources.",
+    "commands": [
+        {
+            "title": "Remove resources around the player",
+            "description": "Removes all resource patches from the ground in a 50 x 50 area around the player.",
+            "command": "/c local surface=game.player.surface\nlocal size=50\nlocal pos=game.player.position\n\nfor _, e in pairs(surface.find_entities_filtered{area={{pos.x-size, pos.y-size},{pos.x+size, pos.y+size}}, type=\"resource\"}) \n\tdo e.destroy() \nend"
+        },
+        {
+            "title": "Add new resource patch",
+            "description": "This creates a new 11×11 patch of resources, centered on the player character, where the ground is not water. The patch it creates is perfectly square but it randomizes the amount similar to natural generation, with fewer ore at the edges and more ore in the center. The default numbers result in a patch with 2500-3000 ore.\n\nIf you want a larger patch, change \"local size = 5\" to a larger number. A larger patch will have exponentially more ore. Entering a number above 30 is not recommended.\n\nIf you want a richer patch, change \"local density = 10\" to a larger number. Entering a very large number shouldn't hurt anything but you probably don't need to go above 100.\n\nTo choose which resource is spawned, change \"stone\" near the bottom to \"iron-ore\", \"copper-ore\", \"coal\", or \"uranium-ore\".",
+            "command": "/c local surface=game.player.surface\nlocal ore=nil\nlocal size=5\nlocal density=10\nfor y=-size, size do\n\tfor x=-size, size do\n\t\ta=(size+1-math.abs(x))*10\n\t\tb=(size+1-math.abs(y))*10\n\t\tif a<b then\n\t\t\tore=math.random(a*density-a*(density-8), a*density+a*(density-8))\n\t\tend\n\t\tif b<a then\n\t\t\tore=math.random(b*density-b*(density-8), b*density+b*(density-8))\n\t\tend\n\t\tif surface.get_tile(game.player.position.x+x, game.player.position.y+y).collides_with(\"ground-tile\") then\n\t\t\tsurface.create_entity({name=\"stone\", amount=ore, position={game.player.position.x+x, game.player.position.y+y}})\n\t\tend\n\tend\nend"
+        },
+        {
+            "title": "Add new oil patch",
+            "description": "This creates 9 crude oil patches in a 3×3 square.",
+            "command": "/c for y=0,2 do\n\tfor x=0,2 do\n\t\tgame.player.surface.create_entity({name=\"crude-oil\", amount=100000, position={game.player.position.x+x*7-7, game.player.position.y+y*7-7}})\n\tend\nend"
+        },
+        {
+            "title": "Regenerate resources",
+            "description": "For solid resources like iron, destroys all resource entities and creates resource entities as in the original map generation. For fluid resources like oil, sets the yield of all existing resource entities to the original amount. Regenerates resources on the entire surface.",
+            "command": "/c local surface = game.player.surface\nfor _, e in pairs(surface.find_entities_filtered{type=\"resource\"}) do\n  if e.prototype.infinite_resource then\n    e.amount = e.initial_amount\n  else\n    e.destroy()\n  end\nend\nlocal non_infinites = {}\nfor resource, prototype in pairs(game.get_filtered_entity_prototypes{{filter=\"type\", type=\"resource\"}}) do\n  if not prototype.infinite_resource then\n    table.insert(non_infinites, resource)\n  end\nend\nsurface.regenerate_entity(non_infinites)\nfor _, e in pairs(surface.find_entities_filtered{type=\"mining-drill\"}) do\n    e.update_connections()\nend"
+        }
+    ]
+}

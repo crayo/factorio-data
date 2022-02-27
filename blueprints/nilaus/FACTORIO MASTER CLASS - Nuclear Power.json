@@ -10,6 +10,10 @@
     {
       "name": "Youtube video - NUCLEAR POWER; Shattering Conventional Wisdom | Factorio 0.18 Tutorial/Guide/How-to",
       "url": "https://www.youtube.com/watch?v=Qw_NzPuccxk"
+    },
+    {
+      "name": "Youtube video - Limitless Uranium-235 with KOVAREX Enrichment Process | Factorio Tutorial/Guide/How-to",
+      "url": "https://www.youtube.com/watch?v=ankt9ex0JLM"
     }
   ],
   "notes": "",
@@ -19,6 +23,7 @@
     "video",
     "tutorial",
     "power",
-    "nuclear"
+    "nuclear",
+    "kovarex"
   ]
 }

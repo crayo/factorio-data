@@ -1,40 +1,48 @@
 #!/usr/bin/env node
 
+// load config
+require('dotenv').config();
+
 /**
  * Module dependencies.
  */
 
-var app = require('../app');
-var debug = require('debug')('server:server');
-var http = require('http');
+const app = require('../app');
+const debug = require('debug')('server:server');
+const http = require('http');
+const exitHook = require("async-exit-hook");
+
+const shutdown = async () => {
+  debug('Shutting down server');
+  await server.close();
+};
 
 /**
- * Get port from environment and store in Express.
+ * Set up graceful exit handling
  */
+exitHook.uncaughtExceptionHandler(err => {
+  console.error("UNCAUGHT TOP-LEVEL EXCEPTION:");
+  console.error(err);
+});
 
-var port = normalizePort(process.env.PORT || '3000');
-app.set('port', port);
+exitHook.unhandledRejectionHandler(err => {
+  console.error("UNHANDLED TOP-LEVEL REJECTION:");
+  console.error(err);
+});
 
-/**
- * Create HTTP server.
- */
+exitHook(async cb => {
+  try {
+    await shutdown();
+  } catch (err) {
+    console.error("ERROR IN EXIT HOOK:");
+    console.error(err);
+  } finally {
+    cb();
+  }
+});
 
-var server = http.createServer(app);
-
-/**
- * Listen on provided port, on all network interfaces.
- */
-
-server.listen(port);
-server.on('error', onError);
-server.on('listening', onListening);
-
-/**
- * Normalize a port into a number, string, or false.
- */
-
-function normalizePort(val) {
-  var port = parseInt(val, 10);
+const normalizePort = val => {
+  const port = parseInt(val, 10);
 
   if (isNaN(port)) {
     // named pipe
@@ -47,18 +55,18 @@ function normalizePort(val) {
   }
 
   return false;
-}
+};
 
 /**
  * Event listener for HTTP server "error" event.
  */
 
-function onError(error) {
+const onError = error => {
   if (error.syscall !== 'listen') {
     throw error;
   }
 
-  var bind = typeof port === 'string'
+  const bind = typeof port === 'string'
     ? 'Pipe ' + port
     : 'Port ' + port;
 
@@ -75,16 +83,22 @@ function onError(error) {
     default:
       throw error;
   }
-}
+};
 
-/**
- * Event listener for HTTP server "listening" event.
- */
-
-function onListening() {
-  var addr = server.address();
-  var bind = typeof addr === 'string'
+const onListening = () => {
+  const addr = server.address();
+  const bind = typeof addr === 'string'
     ? 'pipe ' + addr
     : 'port ' + addr.port;
   debug('Listening on ' + bind);
-}
+};
+
+const port = normalizePort(process.env.PORT || '3000');
+debug(`Setting server port to: ${port}`);
+app.set('port', port);
+
+const server = http.createServer(app);
+debug('Starting server');
+server.listen(port);
+server.on('error', onError);
+server.on('listening', onListening);
